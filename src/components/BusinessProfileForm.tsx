@@ -60,11 +60,19 @@ export function BusinessProfileForm({
     initialProfile?.invoice_prefix || 'INV-'
   );
   const [timezone, setTimezone] = useState(
-    initialProfile?.timezone ||
-      (typeof window !== 'undefined'
-        ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-        : 'UTC')
+    initialProfile?.timezone || 'UTC'
   );
+  const [mounted, setMounted] = useState(false);
+
+  // Client side par load hone ke baad true hoga
+  useEffect(() => {
+    setMounted(true);
+    if (!initialProfile?.timezone && typeof window !== 'undefined') {
+      const detected =
+        Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Calcutta';
+      setTimezone(detected);
+    }
+  }, [initialProfile?.timezone]);
   const [paymentInstructions, setPaymentInstructions] = useState(
     initialProfile?.payment_instructions ||
       (isDemo
@@ -598,7 +606,8 @@ export function BusinessProfileForm({
                 <div className="relative">
                   <select
                     id="timezone"
-                    value={timezone}
+                    suppressHydrationWarning
+                    value={mounted ? (timezone || 'Asia/Calcutta') : 'UTC'}
                     onChange={(e) => {
                       setTimezone(e.target.value);
                       setIsDirty(true);
@@ -840,7 +849,9 @@ export function BusinessProfileForm({
 
             {/* Bottom hint */}
             <div className="bg-slate-50 px-5 py-3 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
-              <span>Timezone: {timezone}</span>
+              <span suppressHydrationWarning>
+                Timezone: {mounted ? (timezone || 'Asia/Calcutta') : 'UTC'}
+              </span>
               <span className="font-semibold text-indigo-600">Phase 1 Real-Time Sync</span>
             </div>
           </div>
