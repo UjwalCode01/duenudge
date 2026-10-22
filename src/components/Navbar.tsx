@@ -12,7 +12,7 @@ import {
   X,
   Clock,
   Sparkles,
-  ExternalLink,
+  Users,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -44,23 +44,28 @@ export function Navbar({ userEmail, userName, businessName }: NavbarProps) {
 
   const navLinks = [
     {
+      name: 'Invoices',
+      href: '/invoices',
+      icon: FileText,
+      active: pathname.startsWith('/invoices'),
+    },
+    {
+      name: 'Clients',
+      href: '/clients',
+      icon: Users,
+      active: pathname.startsWith('/clients'),
+    },
+    {
       name: 'Business Profile',
       href: '/settings',
       icon: Building2,
       active: pathname === '/settings' || pathname === '/onboarding',
     },
     {
-      name: 'Invoices',
-      href: '/invoices',
-      icon: FileText,
-      badge: 'Phase 2',
-      active: pathname === '/invoices',
-    },
-    {
       name: 'Reminders',
       href: '/reminders',
       icon: Clock,
-      badge: 'Phase 2',
+      badge: 'Auto',
       active: pathname === '/reminders',
     },
   ];
@@ -80,7 +85,7 @@ export function Navbar({ userEmail, userName, businessName }: NavbarProps) {
                   DueNudge
                 </span>
                 <span className="text-[10px] font-medium tracking-wide uppercase text-indigo-600 -mt-1">
-                  Phase 1 MVP
+                  Invoices & Reminders
                 </span>
               </div>
             </Link>
@@ -102,7 +107,7 @@ export function Navbar({ userEmail, userName, businessName }: NavbarProps) {
                     <Icon className="w-4 h-4 mr-2" />
                     <span>{link.name}</span>
                     {link.badge && (
-                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
                         {link.badge}
                       </span>
                     )}
@@ -207,7 +212,7 @@ export function Navbar({ userEmail, userName, businessName }: NavbarProps) {
                     <span>{link.name}</span>
                   </div>
                   {link.badge && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
                       {link.badge}
                     </span>
                   )}
