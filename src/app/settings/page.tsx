@@ -41,14 +41,23 @@ async function SettingsContent({ searchParams }: SettingsPageProps) {
         (user.user_metadata?.name as string) ||
         null;
 
-      // Fetch user's business profile
-      const { data: profile } = await supabase
-        .from('business_profiles')
+      // Fetch user's profile from 'profiles' (id = user.id) or fallback to 'business_profiles'
+      let { data: profile } = await supabase
+        .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .maybeSingle();
 
-      initialProfile = profile;
+      if (!profile) {
+        const { data: bp } = await supabase
+          .from('business_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        profile = bp as unknown as typeof profile;
+      }
+
+      initialProfile = profile as unknown as BusinessProfile;
     }
   } else {
     // Supabase credentials not provided yet in .env.local

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { BusinessProfile } from '@/types/database';
+import { saveProfile } from '@/app/settings/actions';
 import { SUPPORTED_CURRENCIES, COMMON_TIMEZONES, isSupabaseConfigured } from '@/lib/utils';
 
 interface BusinessProfileFormProps {
@@ -240,25 +241,11 @@ export function BusinessProfileForm({
         return;
       }
 
-      const supabase = createClient();
+      // Call Server Action with standard Supabase syntax
+      const result = await saveProfile(profilePayload);
 
-      if (!userId) {
-        throw new Error('User session not found. Please log in again.');
-      }
-
-      // Upsert into business_profiles
-      const { error: upsertError } = await supabase
-        .from('business_profiles')
-        .upsert(
-          {
-            user_id: userId,
-            ...profilePayload,
-          },
-          { onConflict: 'user_id' }
-        );
-
-      if (upsertError) {
-        throw upsertError;
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save profile');
       }
 
       setLogoUrl(finalLogoUrl || '');

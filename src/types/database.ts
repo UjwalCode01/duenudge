@@ -38,6 +38,59 @@ export interface Database {
         };
         Relationships: [];
       };
+      profiles: {
+        Row: {
+          id: string;
+          user_id?: string | null;
+          business_name: string;
+          logo_url: string | null;
+          address: string | null;
+          currency: string;
+          payment_instructions: string | null;
+          default_due_days: number;
+          invoice_prefix: string;
+          timezone: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          user_id?: string | null;
+          business_name?: string;
+          logo_url?: string | null;
+          address?: string | null;
+          currency?: string;
+          payment_instructions?: string | null;
+          default_due_days?: number;
+          invoice_prefix?: string;
+          timezone?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          business_name?: string;
+          logo_url?: string | null;
+          address?: string | null;
+          currency?: string;
+          payment_instructions?: string | null;
+          default_due_days?: number;
+          invoice_prefix?: string;
+          timezone?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey";
+            columns: ["id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       business_profiles: {
         Row: {
           id: string;
@@ -269,6 +322,10 @@ export interface Database {
     };
   };
 }
+
+export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
+export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
 export type BusinessProfile = Database['public']['Tables']['business_profiles']['Row'];
 export type BusinessProfileInsert = Database['public']['Tables']['business_profiles']['Insert'];

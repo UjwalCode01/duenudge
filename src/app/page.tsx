@@ -37,11 +37,20 @@ export default async function HomePage() {
         (user.user_metadata?.name as string) ||
         null;
 
-      const { data: profile } = await supabase
-        .from('business_profiles')
+      let { data: profile } = await supabase
+        .from('profiles')
         .select('business_name')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .maybeSingle();
+
+      if (!profile) {
+        const { data: bp } = await supabase
+          .from('business_profiles')
+          .select('business_name')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        profile = bp;
+      }
 
       businessName = profile?.business_name || null;
     }

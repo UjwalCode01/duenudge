@@ -38,6 +38,39 @@ create policy "Users can update their own profile"
   on public.users for update
   using (auth.uid() = id);
 
+-- Create public.profiles table (Primary key id = auth.users.id)
+create table if not exists public.profiles (
+  id uuid references auth.users on delete cascade primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  business_name text not null default '',
+  logo_url text default '',
+  address text default '',
+  currency varchar(10) not null default 'USD',
+  payment_instructions text default '',
+  default_due_days integer not null default 14,
+  invoice_prefix varchar(20) not null default 'INV-',
+  timezone varchar(100) not null default 'UTC',
+  created_at timestamptz default now() not null,
+  updated_at timestamptz default now() not null
+);
+
+alter table public.profiles enable row level security;
+
+drop policy if exists "Users can view their own profile data" on public.profiles;
+create policy "Users can view their own profile data"
+  on public.profiles for select
+  using (auth.uid() = id);
+
+drop policy if exists "Users can insert their own profile data" on public.profiles;
+create policy "Users can insert their own profile data"
+  on public.profiles for insert
+  with check (auth.uid() = id);
+
+drop policy if exists "Users can update their own profile data" on public.profiles;
+create policy "Users can update their own profile data"
+  on public.profiles for update
+  using (auth.uid() = id);
+
 -- Create public.business_profiles table
 create table if not exists public.business_profiles (
   id uuid default gen_random_uuid() primary key,
@@ -93,6 +126,26 @@ begin
   on conflict (id) do update set
     email = excluded.email,
     updated_at = now();
+
+  insert into public.profiles (
+    id,
+    user_id,
+    business_name,
+    currency,
+    default_due_days,
+    invoice_prefix,
+    timezone
+  )
+  values (
+    new.id,
+    new.id,
+    v_name || '''s Business',
+    'USD',
+    14,
+    'INV-',
+    'UTC'
+  )
+  on conflict (id) do nothing;
 
   insert into public.business_profiles (
     user_id,
