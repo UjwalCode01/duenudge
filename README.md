@@ -92,7 +92,7 @@ SUPABASE_SERVICE_ROLE_KEY=sb_secret_...
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) in your browser.
+Visit [https://duenudge-ruby.vercel.app/) in your browser.
 
 ---
 
