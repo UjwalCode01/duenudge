@@ -104,7 +104,7 @@ create policy "Users can update their own business profile"
   on public.business_profiles for update
   using (auth.uid() = user_id);
 
--- Automatic User & Profile Creation Trigger
+-- Automatic User & Profile Creation Trigger (safe version with exception handlers)
 create or replace function public.handle_new_user()
 returns trigger as $$
 declare
@@ -116,54 +116,69 @@ begin
     split_part(new.email, '@', 1)
   );
 
-  insert into public.users (id, email, full_name, avatar_url)
-  values (
-    new.id,
-    new.email,
-    v_name,
-    coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', '')
-  )
-  on conflict (id) do update set
-    email = excluded.email,
-    updated_at = now();
+  -- Safe insert into public.users
+  begin
+    insert into public.users (id, email, full_name, avatar_url)
+    values (
+      new.id,
+      new.email,
+      v_name,
+      coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', '')
+    )
+    on conflict (id) do update set
+      email = excluded.email,
+      updated_at = now();
+  exception when others then
+    raise warning 'handle_new_user: users insert failed: %', sqlerrm;
+  end;
 
-  insert into public.profiles (
-    id,
-    user_id,
-    business_name,
-    currency,
-    default_due_days,
-    invoice_prefix,
-    timezone
-  )
-  values (
-    new.id,
-    new.id,
-    v_name || '''s Business',
-    'USD',
-    14,
-    'INV-',
-    'UTC'
-  )
-  on conflict (id) do nothing;
+  -- Safe insert into public.profiles
+  begin
+    insert into public.profiles (
+      id,
+      user_id,
+      business_name,
+      currency,
+      default_due_days,
+      invoice_prefix,
+      timezone
+    )
+    values (
+      new.id,
+      new.id,
+      v_name || '''s Business',
+      'USD',
+      14,
+      'INV-',
+      'UTC'
+    )
+    on conflict (id) do nothing;
+  exception when others then
+    raise warning 'handle_new_user: profiles insert failed: %', sqlerrm;
+  end;
 
-  insert into public.business_profiles (
-    user_id,
-    business_name,
-    currency,
-    default_due_days,
-    invoice_prefix,
-    timezone
-  )
-  values (
-    new.id,
-    v_name || '''s Business',
-    'USD',
-    14,
-    'INV-',
-    'UTC'
-  )
-  on conflict (user_id) do nothing;
+  -- Safe insert into public.business_profiles
+  begin
+    insert into public.business_profiles (
+      user_id,
+      business_name,
+      currency,
+      default_due_days,
+      invoice_prefix,
+      timezone
+    )
+    values (
+      new.id,
+      v_name || '''s Business',
+      'USD',
+      14,
+      'INV-',
+      'UTC'
+    )
+    on conflict (user_id) do nothing;
+  exception when others then
+    raise warning 'handle_new_user: business_profiles insert failed: %', sqlerrm;
+  end;
 
   return new;
 end;
